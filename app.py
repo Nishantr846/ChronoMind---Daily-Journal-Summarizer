@@ -1,8 +1,10 @@
 import streamlit as st
 import datetime
-import os
-import json
 from transformers import pipeline
+
+# Initialize session state for entries if it doesn't exist
+if 'entries' not in st.session_state:
+    st.session_state.entries = []
 
 # Custom CSS
 st.markdown("""
@@ -102,62 +104,44 @@ st.markdown("""
 # Load summarizer
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+    return pipeline("summarization", model="facebook/bart-base")
 
 summarizer = load_summarizer()
-
-# File to store entries
-DATA_FILE = "journal_entries.json"
-
-# Load or initialize entries
-def load_entries():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
-
-def save_entries(entries):
-    with open(DATA_FILE, "w") as f:
-        json.dump(entries, f)
-
-entries = load_entries()
 
 # App UI
 st.markdown('<h1 class="main-title">ChronoMind 📝 - Daily Journal Summarizer</h1>', unsafe_allow_html=True)
 
 # Journal entry input
 st.markdown('<div style="font-size: 18px; font-weight: 600; color: #000000; margin-bottom: 8px;">Enter your journal entry for today:</div>', unsafe_allow_html=True)
-user_input = st.text_area("", height=150, label_visibility="collapsed")
+user_input = st.text_area("", height=80, label_visibility="collapsed")
 
 if st.button("Submit Entry") and user_input.strip():
     today = datetime.date.today().isoformat()
-    entries.append({"date": today, "text": user_input.strip()})
-    save_entries(entries)
+    st.session_state.entries.append({"date": today, "text": user_input.strip()})
     st.success("Entry saved.")
 
 # Display timeline
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">📅 Journal Timeline</h2>', unsafe_allow_html=True)
-if entries:
-    for i, e in enumerate(reversed(entries)):
+if st.session_state.entries:
+    for i, e in enumerate(reversed(st.session_state.entries)):
         with st.container():
             col1, col2 = st.columns([0.9, 0.1])
             with col1:
                 st.markdown(f'<div class="timeline-entry"><strong>{e["date"]}</strong>: {e["text"]}</div>', unsafe_allow_html=True)
             with col2:
                 if st.button("🗑️", key=f"delete_{i}"):
-                    actual_index = len(entries) - 1 - i
-                    entries.pop(actual_index)
-                    save_entries(entries)
+                    actual_index = len(st.session_state.entries) - 1 - i
+                    st.session_state.entries.pop(actual_index)
                     st.rerun()
 else:
     st.info("No entries yet.")
 
 # Generate weekly summaries
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">🧠 Weekly Summaries</h2>', unsafe_allow_html=True)
-if entries:
+if st.session_state.entries:
     # Group entries by week
     grouped = {}
-    for entry in entries:
+    for entry in st.session_state.entries:
         date_obj = datetime.date.fromisoformat(entry["date"])
         week = f"Week {date_obj.isocalendar()[1]} ({date_obj.strftime('%Y')})"
         grouped.setdefault(week, []).append(entry["text"])
@@ -166,15 +150,20 @@ if entries:
     for week, texts in grouped.items():
         combined_text = " ".join(texts)
         if len(combined_text.split()) > 5:
+            # Calculate appropriate max_length based on input length
+            input_length = len(combined_text.split())
+            max_length = min(50, input_length // 2)  # Use half the input length, but cap at 50
+            min_length = min(20, max_length // 2)    # Use half of max_length, but cap at 20
+            
             summary = summarizer(
                 combined_text,
-                max_length=100,
-                min_length=30,
+                max_length=max_length,
+                min_length=min_length,
                 do_sample=False,
                 truncation=True,
                 no_repeat_ngram_size=3,
-                length_penalty=2.0,
-                num_beams=4
+                length_penalty=1.0,
+                num_beams=2
             )[0]['summary_text']
             if summary.lower().startswith('summary:'):
                 summary = summary[len('summary:'):].strip()
