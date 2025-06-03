@@ -102,7 +102,7 @@ st.markdown("""
 # Load summarizer
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="google/pegasus-xsum")
+    return pipeline("summarization", model="facebook/bart-large-cnn")
 
 summarizer = load_summarizer()
 
@@ -168,11 +168,13 @@ if entries:
         if len(combined_text.split()) > 5:
             summary = summarizer(
                 combined_text,
-                max_length=50,
-                min_length=10,
+                max_length=100,
+                min_length=30,
                 do_sample=False,
                 truncation=True,
-                no_repeat_ngram_size=2
+                no_repeat_ngram_size=3,
+                length_penalty=2.0,
+                num_beams=4
             )[0]['summary_text']
             if summary.lower().startswith('summary:'):
                 summary = summary[len('summary:'):].strip()
