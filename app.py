@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 from transformers import pipeline
 import uuid
+import io
 
 # Generate a unique session ID
 if 'session_id' not in st.session_state:
@@ -12,12 +13,12 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap');
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
-    
+
     .stApp {
         background-color: #c6e2ff;
         font-family: 'Inter', sans-serif;
     }
-    
+
     .main-title {
         font-size: 32px;
         font-weight: 800;
@@ -25,7 +26,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
     }
-    
+
     .stButton button {
         background-color: #ffdb7d;
         color: #000000;
@@ -35,11 +36,11 @@ st.markdown("""
         padding: 0.5rem 1rem;
         border: none;
     }
-    
+
     .stButton button:hover {
         background-color: #f7c948;
     }
-    
+
     .stTextArea textarea {
         background-color: #ffefb8;
         border-radius: 6px;
@@ -47,7 +48,7 @@ st.markdown("""
         color: #000000;
         caret-color: #000000;
     }
-    
+
     .timeline-entry {
         background-color: #ffefb8;
         border-radius: 6px;
@@ -55,7 +56,7 @@ st.markdown("""
         margin-bottom: 0.5rem;
         color: #000000;
     }
-    
+
     .summary-box {
         background-color: #ffefb8;
         border-radius: 6px;
@@ -63,7 +64,7 @@ st.markdown("""
         margin-bottom: 1rem;
         color: #000000;
     }
-    
+
     .footer {
         display: flex;
         justify-content: space-between;
@@ -71,7 +72,7 @@ st.markdown("""
         color: #1a2e5b;
         font-weight: 600;
     }
-    
+
     .footer a {
         color: #1a2e5b;
         text-decoration: none;
@@ -79,23 +80,20 @@ st.markdown("""
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .footer a:hover {
         text-decoration: underline;
         color: #000000;
     }
 
-    /* Fix text color in radio buttons */
     .stRadio > div {
         color: #000000;
     }
 
-    /* Fix text color in labels */
     .stMarkdown {
         color: #000000;
     }
 
-    /* Fix text color in info messages */
     .stInfo {
         color: #000000;
     }
@@ -109,12 +107,11 @@ def load_summarizer():
 
 summarizer = load_summarizer()
 
-# Initialize entries for this session
-@st.cache_data(ttl=3600, show_spinner=False)
-def get_entries(session_id):
-    return []
+# Initialize entries in session state
+if "entries" not in st.session_state:
+    st.session_state.entries = []
 
-entries = get_entries(st.session_state.session_id)
+entries = st.session_state.entries
 
 # App UI
 st.markdown('<h1 class="main-title">ChronoMind 📝 - Daily Journal Summarizer</h1>', unsafe_allow_html=True)
@@ -127,6 +124,7 @@ if st.button("Submit Entry") and user_input.strip():
     today = datetime.date.today().isoformat()
     entries.append({"date": today, "text": user_input.strip()})
     st.success("Entry saved.")
+    st.rerun()
 
 # Display timeline
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">📅 Journal Timeline</h2>', unsafe_allow_html=True)
@@ -147,7 +145,6 @@ else:
 # Generate weekly summaries
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">🧠 Weekly Summaries</h2>', unsafe_allow_html=True)
 if entries:
-    # Group entries by week
     grouped = {}
     for entry in entries:
         date_obj = datetime.date.fromisoformat(entry["date"])
@@ -158,11 +155,10 @@ if entries:
     for week, texts in grouped.items():
         combined_text = " ".join(texts)
         if len(combined_text.split()) > 5:
-            # Calculate appropriate max_length based on input length
             input_length = len(combined_text.split())
-            max_length = min(50, input_length // 2)  # Use half the input length, but cap at 50
-            min_length = min(20, max_length // 2)    # Use half of max_length, but cap at 20
-            
+            max_length = min(50, input_length // 2)
+            min_length = min(20, max_length // 2)
+
             summary = summarizer(
                 combined_text,
                 max_length=max_length,
@@ -180,11 +176,19 @@ if entries:
     for week, summary in summaries.items():
         st.markdown(f'<div class="summary-box"><strong>{week}</strong><br>{summary}</div>', unsafe_allow_html=True)
 
-    if st.button("📤 Export Summaries to Text File"):
-        with open("weekly_summaries.txt", "w") as f:
-            for week, summary in summaries.items():
-                f.write(f"{week}\n{summary}\n\n")
-        st.success("Summaries exported to weekly_summaries.txt")
+    if summaries:
+        output = io.StringIO()
+        for week, summary in summaries.items():
+            output.write(f"{week}\n{summary}\n\n")
+        summary_text = output.getvalue()
+        output.close()
+
+        st.download_button(
+            label="📥 Download Summary",
+            data=summary_text,
+            file_name="weekly_summaries.txt",
+            mime="text/plain"
+        )
 else:
     st.info("Add entries to generate summaries.")
 
