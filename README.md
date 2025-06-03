@@ -2,7 +2,6 @@
 
 ChronoMind is an intelligent journal application that helps you maintain your daily entries and automatically generates meaningful weekly summaries using advanced AI technology.
 
-![ChronoMind Banner](https://storage.googleapis.com/a1aa/image/264b7227-b4ae-4bb9-13c8-a2f144802244.jpg)
 
 ## ✨ Features
 

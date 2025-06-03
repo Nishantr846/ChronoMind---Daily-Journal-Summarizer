@@ -70,7 +70,7 @@ st.markdown("""
     }
     
     .footer a {
-        color:rgb(0, 0, 0);
+        color: #f7c948;
         text-decoration: none;
         display: flex;
         align-items: center;
@@ -101,7 +101,11 @@ st.markdown("""
 # Load summarizer
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+    try:
+        return pipeline("summarization", model="facebook/bart-large-cnn")
+    except Exception as e:
+        st.error(f"Error loading summarizer: {str(e)}")
+        return None
 
 summarizer = load_summarizer()
 
@@ -110,31 +114,41 @@ DATA_FILE = "journal_entries.json"
 
 # Load or initialize entries
 def load_entries():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
+    try:
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r") as f:
+                return json.load(f)
+        return []
+    except Exception as e:
+        st.error(f"Error loading entries: {str(e)}")
+        return []
 
 def save_entries(entries):
-    with open(DATA_FILE, "w") as f:
-        json.dump(entries, f)
+    try:
+        with open(DATA_FILE, "w") as f:
+            json.dump(entries, f)
+    except Exception as e:
+        st.error(f"Error saving entries: {str(e)}")
 
 entries = load_entries()
 
 # Voice input
 def get_voice_input():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("Listening... Please speak now.")
-        audio = r.listen(source)
     try:
-        text = r.recognize_google(audio)
-        st.success(f"You said: {text}")
-        return text
-    except sr.UnknownValueError:
-        st.error("Could not understand audio.")
-    except sr.RequestError:
-        st.error("Could not request results.")
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            st.info("Listening... Please speak now.")
+            audio = r.listen(source)
+        try:
+            text = r.recognize_google(audio)
+            st.success(f"You said: {text}")
+            return text
+        except sr.UnknownValueError:
+            st.error("Could not understand audio.")
+        except sr.RequestError:
+            st.error("Could not request results.")
+    except Exception as e:
+        st.error("Voice input is not available in this environment.")
     return ""
 
 # App UI
@@ -182,7 +196,7 @@ else:
 
 # Generate weekly summaries
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">🧠 Weekly Summaries</h2>', unsafe_allow_html=True)
-if entries:
+if entries and summarizer:
     # Group entries by week
     grouped = {}
     for entry in entries:
@@ -194,30 +208,38 @@ if entries:
     for week, texts in grouped.items():
         combined_text = " ".join(texts)
         if len(combined_text.split()) > 5:
-            # Adjust parameters for better summarization
-            summary = summarizer(
-                combined_text,
-                max_length=100,
-                min_length=30,
-                do_sample=False,
-                num_beams=4,
-                length_penalty=2.0,
-                early_stopping=True
-            )[0]['summary_text']
-            if summary.lower().startswith('summary:'):
-                summary = summary[len('summary:'):].strip()
-            summaries[week] = summary
+            try:
+                summary = summarizer(
+                    combined_text,
+                    max_length=100,
+                    min_length=30,
+                    do_sample=False,
+                    num_beams=4,
+                    length_penalty=2.0,
+                    early_stopping=True
+                )[0]['summary_text']
+                if summary.lower().startswith('summary:'):
+                    summary = summary[len('summary:'):].strip()
+                summaries[week] = summary
+            except Exception as e:
+                st.error(f"Error generating summary for {week}: {str(e)}")
 
     for week, summary in summaries.items():
         st.markdown(f'<div class="summary-box"><strong>{week}</strong><br>{summary}</div>', unsafe_allow_html=True)
 
     if st.button("📤 Export Summaries to Text File"):
-        with open("weekly_summaries.txt", "w") as f:
-            for week, summary in summaries.items():
-                f.write(f"{week}\n{summary}\n\n")
-        st.success("Summaries exported to weekly_summaries.txt")
+        try:
+            with open("weekly_summaries.txt", "w") as f:
+                for week, summary in summaries.items():
+                    f.write(f"{week}\n{summary}\n\n")
+            st.success("Summaries exported to weekly_summaries.txt")
+        except Exception as e:
+            st.error(f"Error exporting summaries: {str(e)}")
 else:
-    st.info("Add entries to generate summaries.")
+    if not summarizer:
+        st.error("Summarizer is not available. Please try refreshing the page.")
+    else:
+        st.info("Add entries to generate summaries.")
 
 # Footer
 st.markdown("""
