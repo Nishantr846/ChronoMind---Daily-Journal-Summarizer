@@ -1,34 +1,22 @@
-# ChronoMind 📝 - Daily Journal Summarizer
+# ChronoMind - Daily Journal Summarizer
 
-ChronoMind is an intelligent journal application that helps you maintain your daily entries and automatically generates meaningful weekly summaries using advanced AI technology.
+A Streamlit-based web application that helps you maintain a daily journal and automatically generates weekly summaries using AI.
 
+## Features
 
-## ✨ Features
+- 📝 **Daily Journal Entries**: Write and save your daily thoughts and experiences
+- 🧠 **AI-Powered Summaries**: Automatically generates weekly summaries of your journal entries
+- 📅 **Timeline View**: View your journal entries in a chronological timeline
+- 🗑️ **Entry Management**: Delete entries you no longer want to keep
+- 📤 **Export Functionality**: Download your weekly summaries as a text file
+- 🎨 **Modern UI**: Clean and intuitive user interface
+- 🔒 **Session-Based**: Each new session starts fresh, ensuring privacy
 
-- 📝 **Dual Input Modes**
-  - Text input for traditional journaling
-  - Voice input for hands-free entry
-
-- 🧠 **AI-Powered Summaries**
-  - Automatic weekly summaries using BART-Large-CNN model
-  - Intelligent context understanding
-  - Temporal relationship preservation
-
-- 📅 **Timeline View**
-  - Chronological display of entries
-  - Easy entry management
-  - Quick delete functionality
-
-- 📤 **Export Capabilities**
-  - Export weekly summaries to text file
-  - Easy sharing and backup
-
-## 🚀 Installation
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Nishantr846/ChronoMind.git
-cd ChronoMind
+git clone https://github.com/Nishantr846/ChronoMind---Daily-Journal-Summarizer.git
 ```
 
 2. Install the required dependencies:
@@ -41,57 +29,33 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## 📋 Requirements
+## Usage
 
-- Python 3.7+
-- Streamlit
-- Transformers
-- SpeechRecognition
-- PyAudio (for voice input)
+1. Open the application in your web browser
+2. Enter your journal entry in the text area
+3. Click "Submit Entry" to save your entry
+4. View your entries in the timeline section
+5. Check the weekly summaries section for AI-generated summaries
+6. Use the download button to save your summaries
 
-## 💻 Usage
+## Technologies Used
 
-1. **Starting the App**
-   - Launch the application using `streamlit run app.py`
-   - The app will open in your default web browser
+- **Streamlit**: Web application framework
+- **Transformers**: Hugging Face's transformers library for text summarization
+- **BART**: Facebook's BART model for generating summaries
+- **HTML/CSS**: Custom styling for a modern look
 
-2. **Adding Entries**
-   - Choose between text or voice input
-   - Type your entry or click the microphone button to record
-   - Click "Submit Entry" to save
+## Contributing
 
-3. **Viewing Timeline**
-   - All entries are displayed in chronological order
-   - Use the delete button (🗑️) to remove entries
+Feel free to submit issues and enhancement requests!
 
-4. **Weekly Summaries**
-   - Summaries are automatically generated
-   - Click "Export Summaries" to save to a text file
+## License
 
-## 🛠️ Technical Details
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- Built with Streamlit for a modern web interface
-- Uses Facebook's BART-Large-CNN model for intelligent summarization
-- Implements speech recognition for voice input
-- Stores data locally in JSON format
+## Author
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-- **Nishant Kumar**
-  - GitHub: [@Nishantr846](https://github.com/Nishantr846)
-  - LinkedIn: [Nishant Kumar](https://linkedin.com/in/Nishantr846)
-  - Portfolio: [Personal Website](https://nishantr846.github.io/Portfolio-Website/index.html)
-
-## 🙏 Acknowledgments
-
-- Streamlit team for the amazing framework
-- Hugging Face for the transformer models
-- The open-source community for various tools and libraries
+Nishant Kumar
+- GitHub: [Nishantr846](https://github.com/Nishantr846)
+- Portfolio: [Portfolio Website](https://nishantr846.github.io/Portfolio-Website/index.html)
+- LinkedIn: [Nishantr846](https://linkedin.com/in/Nishantr846)
