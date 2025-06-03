@@ -42,6 +42,7 @@ st.markdown("""
         border-radius: 6px;
         font-size: 16px;
         color: #000000;
+        caret-color: #000000;
     }
     
     .timeline-entry {

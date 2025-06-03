@@ -5,8 +5,3 @@ numpy
 pandas
 protobuf
 sentencepiece
-accelerate
-markdown-it-py
-mdurl
-Pygments
-rich
