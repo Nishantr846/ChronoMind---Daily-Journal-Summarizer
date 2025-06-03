@@ -161,13 +161,13 @@ if entries:
 
             summary = summarizer(
                 combined_text,
-                max_length=max_length,
-                min_length=min_length,
+                max_length=150,
+                min_length=60,
                 do_sample=False,
                 truncation=True,
                 no_repeat_ngram_size=3,
-                length_penalty=1.0,
-                num_beams=2
+                length_penalty=2.0,
+                num_beams=4
             )[0]['summary_text']
             if summary.lower().startswith('summary:'):
                 summary = summary[len('summary:'):].strip()
