@@ -102,7 +102,7 @@ st.markdown("""
 # Load summarizer
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+    return pipeline("summarization", model="facebook/bart-base")
 
 summarizer = load_summarizer()
 
