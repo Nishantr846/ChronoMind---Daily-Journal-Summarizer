@@ -3,14 +3,6 @@ import datetime
 import os
 import json
 from transformers import pipeline
-import speech_recognition as sr
-
-# Try to import PyAudio, but don't fail if it's not available
-try:
-    import pyaudio
-    VOICE_INPUT_AVAILABLE = True
-except ImportError:
-    VOICE_INPUT_AVAILABLE = False
 
 # Custom CSS
 st.markdown("""
@@ -129,52 +121,12 @@ def save_entries(entries):
 
 entries = load_entries()
 
-# Voice input
-def get_voice_input():
-    if not VOICE_INPUT_AVAILABLE:
-        st.warning("Voice input is not available in this environment. Please use text input instead.")
-        return ""
-    
-    try:
-        r = sr.Recognizer()
-        with sr.Microphone() as source:
-            st.info("Listening... Please speak now.")
-            audio = r.listen(source)
-        try:
-            text = r.recognize_google(audio)
-            st.success(f"You said: {text}")
-            return text
-        except sr.UnknownValueError:
-            st.error("Could not understand audio.")
-        except sr.RequestError:
-            st.error("Could not request results.")
-    except Exception as e:
-        st.error("Voice input is not available in this environment.")
-    return ""
-
 # App UI
 st.markdown('<h1 class="main-title">ChronoMind 📝 - Daily Journal Summarizer</h1>', unsafe_allow_html=True)
 
-# Input mode selection
-col1, col2 = st.columns([3, 1])
-with col1:
-    st.markdown('<div style="font-size: 16px; font-weight: 600; color: #000000;">Input Mode</div>', unsafe_allow_html=True)
-with col2:
-    if VOICE_INPUT_AVAILABLE:
-        input_mode = st.radio("", ["Type", "Voice"], horizontal=True, label_visibility="collapsed")
-    else:
-        input_mode = "Type"
-        st.info("Voice input is not available in this environment.")
-
 # Journal entry input
-if input_mode == "Type":
-    st.markdown('<div style="font-size: 18px; font-weight: 600; color: #000000; margin-bottom: 8px;">Enter your journal entry for today:</div>', unsafe_allow_html=True)
-    user_input = st.text_area("", height=150, label_visibility="collapsed")
-else:
-    if st.button("🎤 Record Voice"):
-        user_input = get_voice_input()
-    else:
-        user_input = ""
+st.markdown('<div style="font-size: 18px; font-weight: 600; color: #000000; margin-bottom: 8px;">Enter your journal entry for today:</div>', unsafe_allow_html=True)
+user_input = st.text_area("", height=150, label_visibility="collapsed")
 
 if st.button("Submit Entry") and user_input.strip():
     today = datetime.date.today().isoformat()
