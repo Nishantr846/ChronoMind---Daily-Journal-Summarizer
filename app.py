@@ -1,10 +1,11 @@
 import streamlit as st
 import datetime
 from transformers import pipeline
+import uuid
 
-# Initialize session state for entries if it doesn't exist
-if 'entries' not in st.session_state:
-    st.session_state.entries = []
+# Generate a unique session ID
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
 # Custom CSS
 st.markdown("""
@@ -108,6 +109,13 @@ def load_summarizer():
 
 summarizer = load_summarizer()
 
+# Initialize entries for this session
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_entries(session_id):
+    return []
+
+entries = get_entries(st.session_state.session_id)
+
 # App UI
 st.markdown('<h1 class="main-title">ChronoMind 📝 - Daily Journal Summarizer</h1>', unsafe_allow_html=True)
 
@@ -117,31 +125,31 @@ user_input = st.text_area("", height=80, label_visibility="collapsed")
 
 if st.button("Submit Entry") and user_input.strip():
     today = datetime.date.today().isoformat()
-    st.session_state.entries.append({"date": today, "text": user_input.strip()})
+    entries.append({"date": today, "text": user_input.strip()})
     st.success("Entry saved.")
 
 # Display timeline
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">📅 Journal Timeline</h2>', unsafe_allow_html=True)
-if st.session_state.entries:
-    for i, e in enumerate(reversed(st.session_state.entries)):
+if entries:
+    for i, e in enumerate(reversed(entries)):
         with st.container():
             col1, col2 = st.columns([0.9, 0.1])
             with col1:
                 st.markdown(f'<div class="timeline-entry"><strong>{e["date"]}</strong>: {e["text"]}</div>', unsafe_allow_html=True)
             with col2:
                 if st.button("🗑️", key=f"delete_{i}"):
-                    actual_index = len(st.session_state.entries) - 1 - i
-                    st.session_state.entries.pop(actual_index)
+                    actual_index = len(entries) - 1 - i
+                    entries.pop(actual_index)
                     st.rerun()
 else:
     st.info("No entries yet.")
 
 # Generate weekly summaries
 st.markdown('<h2 style="font-size: 16px; font-weight: 600; margin-bottom: 1rem;">🧠 Weekly Summaries</h2>', unsafe_allow_html=True)
-if st.session_state.entries:
+if entries:
     # Group entries by week
     grouped = {}
-    for entry in st.session_state.entries:
+    for entry in entries:
         date_obj = datetime.date.fromisoformat(entry["date"])
         week = f"Week {date_obj.isocalendar()[1]} ({date_obj.strftime('%Y')})"
         grouped.setdefault(week, []).append(entry["text"])
