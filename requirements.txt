@@ -1,6 +1,6 @@
-streamlit==1.32.0
-transformers==4.38.2
+streamlit
+transformers
 torch==2.5.0
-numpy==1.24.3
-pandas==2.0.3
-protobuf==4.25.3
+numpy
+pandas
+protobuf
