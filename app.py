@@ -103,7 +103,7 @@ st.markdown("""
 # Load summarizer
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="facebook/bart-base")
+    return pipeline("summarization", model="facebook/bart-large-cnn", device=-1)
 
 summarizer = load_summarizer()
 
@@ -161,13 +161,13 @@ if entries:
 
             summary = summarizer(
                 combined_text,
-                max_length=150,
-                min_length=60,
+                max_length=100,
+                min_length=30,
                 do_sample=False,
                 truncation=True,
-                no_repeat_ngram_size=3,
-                length_penalty=2.0,
-                num_beams=4
+                no_repeat_ngram_size=2,
+                length_penalty=1.0,
+                num_beams=2
             )[0]['summary_text']
             if summary.lower().startswith('summary:'):
                 summary = summary[len('summary:'):].strip()

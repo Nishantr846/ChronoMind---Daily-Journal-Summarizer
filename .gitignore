@@ -2,7 +2,7 @@
 venv/
 env/
 ENV/
-jounrnalenv/
+journalenv/
 .env/
 
 # Python cache files
